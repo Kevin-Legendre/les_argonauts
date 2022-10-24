@@ -1,30 +1,52 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div id="home">
+    <header>
+      <h1>
+        <img src="https://www.wildcodeschool.com/assets/logo_main-e4f3f744c8e717f1b7df3858dce55a86c63d4766d5d9a7f454250145f097c2fe.png" alt="Wild Code School logo" />
+        Les Argonautes
+      </h1>
+    </header>
+    <router-view/>
+    <footer>
+      <p>Réalisé par Jason en Anthestérion de l'an 515 avant JC</p>
+    </footer>
+  </div>
 </template>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  color: #383838
 }
 
-nav {
-  padding: 30px;
+#home {
+  h1, h2 {
+    text-align: center;
+  }
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+  header {
+    background: #f4f4f4;
+    text-align: center;
+    padding: 2em;
+    img {
+      max-width: 96px;
+    }
+    h1 {
+      font-size: 2.5em;
     }
   }
+
+  footer {
+    background: #F76B6B;
+    margin-top: 2em;
+    text-align: center;
+    color: #fff;
+    background: #f76c6c;
+    padding: 0.25em 0;
+  }
 }
+
 </style>

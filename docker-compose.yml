@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  api:
+    container_name: api-les-argonautes
+    image: node:14-slim
+    depends_on:
+      - rdb
+    command: ./node_modules/nodemon/bin/nodemon.js ./api/index.js
+    volumes:
+      - ./:/usr/src/app
+    working_dir: /usr/src/app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+  rdb:
+    container_name: rdb-les-argonautes
+    image: rethinkdb:2.4
+    platform: linux/amd64
+    volumes:
+      - ./api/rdb:/data
+    ports:
+      - "3080:8080"

@@ -1,0 +1,7 @@
+{
+  "rethinkdb": {
+    "port": 28015,
+    "db": "les_argonautes",
+    "host":"rdb-les-argonautes"
+  }
+}
