@@ -2,7 +2,7 @@
 node_modules
 /dist
 
-
+./api/rdb
 # local env files
 .env.local
 .env

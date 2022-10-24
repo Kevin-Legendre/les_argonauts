@@ -1,57 +1,88 @@
 <template>
   <main>
-    <h2>Ajouter un(e) Argonaute</h2>
+    <h2 class="add-title">
+      Ajouter un(e) Argonaute
+      <span v-if="argonauts.length > 0" class="btn-delete" @click="deleteAll">
+        <span class="btn-icon"></span>
+        <p class="btn-text">Supprimer tout</p>
+      </span>
+    </h2>
     <form class="new-member-form">
       <label for="name">Nom de l&apos;Argonaute</label>
-      <input v-model="agronautInput" type="text" placeholder="Charalampos" autofocus  :class="{ 'form-input': true, 'form-error': error }" />
+      <input
+        v-model="argonautInput"
+        type="text"
+        placeholder="Charalampos"
+        autofocus
+        :class="{ 'form-input': true, 'form-error': error }"
+      />
       <span v-if="error" class="error-message">{{ error }}</span>
       <button @click.prevent="submitForm">Envoyer</button>
     </form>
 
-    <h2>Membres de l'équipage ({{ agronauts.length }})</h2>
+    <h2>Membres de l'équipage ({{ argonauts.length }})</h2>
     <Loader v-if="loading"/>
-    <section class="member-list" v-else-if="agronaut">
-      <div v-for="agronaut in agronauts" class="member-item" :key="agronaut.id">
-        <div class="card card-edit" v-if="update && update.id === agronaut.id">
-          <input v-model="update.name" :ref="agronaut.id" type="text" placeholder="Nom" @keyup.enter.prevent="submitEdit" @keyup.escape.prevent="cancel" :class="{ 'form-input': true, 'form-input-edit': true, 'form-error': updateError }" />
-          <p v-if="updateError" class="input-error">{{ updateError }}</p>
-          <span v-if="error" class="error-message">{{ error }}</span>
-          <span @click="submitEdit" class="edit-button check-icon" />
-          <span @click="cancel" class="edit-button cancel-icon"/>
-        </div>
-        <div v-else class="card" @dblclick="edit(agronaut)">
-          <p>{{ agronaut.name }}</p>
-          <span class="edit" @click.self="edit(agronaut)"/>
+    <section class="list" v-else>
+      <div class="member-list" v-if="argonauts.length > 0">
+        <div
+          v-for="argonaut in argonauts"
+          :key="argonaut.id"
+          class="member-item"
+        >
+          <div class="card card-edit" v-if="update && update.id === argonaut.id">
+            <input
+              v-model="update.name"
+              :ref="argonaut.id"
+              type="text"
+              placeholder="Nom"
+              @keyup.enter.prevent="submitEdit"
+              @keyup.escape.prevent="cancel"
+              :class="{ 'form-input': true, 'form-input-edit': true, 'form-error': updateError }"
+            />
+            <p v-if="updateError" class="input-error">{{ updateError }}</p>
+            <span @click="submitEdit" class="edit-button check-icon" />
+            <span @click="cancel" class="edit-button cancel-icon"/>
+          </div>
+          <div v-else class="card" @dblclick="edit(argonaut)">
+            <p>{{ argonaut.name }}</p>
+            <span class="edit" @click.self="edit(argonaut)"/>
+          </div>
         </div>
       </div>
+      <p v-else class="nothing">Auncun argonauts enregistré</p>
     </section>
-    <p v-else>Auncun Argonaute pour le moment</p>
   </main>
 </template>
 
 <script>
+import Loader from '@/components/loader'
 
 export default {
+  components: {
+    Loader
+  },
   data () {
     return {
-      agronautInput: '',
-      agronauts: [],
-      loading: false,
+      argonautInput: '',
       error: null,
+      argonauts: [],
+      loading: false,
       update: {},
       updateError: null
     }
   },
   watch: {
-    agronautInput (val, old) {
-      if ((old.length === 0 && val.length > 0) || this.error) {
-        this.error = null
+    argonautInput () {
+      this.error = null
+      const exist = this.argonauts.find((arg) => arg.name === this.argonautInput)
+      if (exist) {
+        this.error = 'Cet argonaut existe déjà'
       }
     },
     'update.name' () {
-      this.updateError = null
       if (this.update) {
-        const exist = this.agronauts.find((arg) => arg.name === this.update.name && arg.id !== this.update.id)
+        this.updateError = null
+        const exist = this.argonauts.find((arg) => arg.name === this.update.name && arg.id !== this.update.id)
         if (exist) {
           this.updateError = 'Cet argonaut existe déjà'
         }
@@ -59,34 +90,48 @@ export default {
     }
   },
   methods: {
+    load () {
+      this.loading = true
+      this.$api.get('/argonauts')
+        .then((res) => {
+          if (res.data) {
+            setTimeout(() => {
+              this.argonauts = res.data
+              this.loading = false
+            }, 500)
+          }
+        })
+        .catch(() => {
+          console.error('une erreur est survenue')
+          this.loading = false
+        })
+    },
     submitForm () {
-      this.error = null
-      if (this.agronautInput.length === 0) {
+      if (this.argonautInput.length === 0) {
         this.error = 'Ce champ est requis'
         return
       }
+
       if (!this.error) {
-        this.$api.post('/argonaut', { name: this.agronautInput })
+        this.$api.post('/argonaut', { name: this.argonautInput })
           .then((res) => {
             if (res.data) {
-              this.agronauts.push(res.data)
+              this.argonauts.unshift(res.data)
             }
-          })
-          .then(() => {
-            this.agronautInput = ''
+            this.argonautInput = ''
           })
           .catch((err) => {
             if (err.toString().match(/409/)) {
-              this.error = 'Cet agronaut existe déjà'
+              this.error = 'Cet argonaut existe déjà'
             }
           })
       }
     },
-    edit (agronaut) {
-      if (agronaut) {
-        this.update = { ...agronaut }
+    edit (argonaut) {
+      if (argonaut) {
+        this.update = { ...argonaut }
         this.$nextTick(() => {
-          this.$refs[agronaut.id][0].focus()
+          this.$refs[argonaut.id][0].focus()
         })
       }
     },
@@ -95,14 +140,19 @@ export default {
         this.$api.put('/argonaut/' + this.update.id, { name: this.update.name })
           .then((res) => res.data)
           .then((argonaut) => {
-            this.agronauts.forEach((arg) => {
+            this.argonauts.forEach((arg) => {
               if (arg.id === argonaut.id) {
                 arg.name = argonaut.name
               }
             })
-          })
-          .then(() => {
             this.cancel()
+          })
+          .catch((err) => {
+            if (err.toString().match(/409/)) {
+              this.updateError = 'Cet argonaut existe déjà'
+            } else {
+              console.error(err.toString())
+            }
           })
       }
     },
@@ -110,29 +160,73 @@ export default {
       if (this.update) {
         this.update = null
       }
+    },
+    deleteAll () {
+      if (this.argonauts.length > 0) {
+        this.loading = true
+        this.$api.delete('argonauts')
+          .then(() => {
+            this.load()
+          })
+          .catch((err) => {
+            console.error(err.toString())
+          })
+      }
     }
   },
   created () {
-    this.loading = true
-    this.$api.get('/argonauts')
-      .then((res) => {
-        if (res.data) {
-          this.agronauts = res.data
-          this.loading = false
-        }
-      })
-      .catch(() => {
-        console.error('une erreur est survenue')
-      })
+    this.load()
   }
 }
 </script>
 
 <style lang="scss" scoped>
 main {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   min-height: calc(100vh - 275px);
+  h2.add-title {
+    position: relative;
+    span.btn-delete {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 0;
+      right: 10px;
+      border-radius: 3px;
+      background-color: #ff5151;
+      -webkit-transition: width .2s ease-in-out;
+      transition: width .2s ease-in-out;
+      cursor: pointer;
+      .btn-icon {
+        display: block;
+        width: 20px;
+        height: 20px;
+        display: block;
+        background-color: #fff;
+        -webkit-mask: url(@/assets/close.svg) no-repeat center / contain;
+        mask: url(@/assets/close.svg) no-repeat center / contain;
+      }
+      .btn-text {
+        display: block;
+        font-size: 0px;
+        padding: 0;
+        color: #fff;
+        -webkit-transition: all .2s ease-in-out;
+        transition: all .2s ease-in-out;
+      }
+      &:hover {
+        width: 140px;
+        .btn-text {
+          font-size: 14px;
+          padding: 0 8px;
+        }
+      }
+    }
+  }
   .form-input {
     margin-top: 10px;
     background-color: #fff;
@@ -193,7 +287,11 @@ main {
       }
     }
   }
-
+  .nothing {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+  }
   .member-list {
     display: flex;
     flex-wrap: wrap;
