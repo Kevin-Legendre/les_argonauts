@@ -49,7 +49,7 @@
           </div>
         </div>
       </div>
-      <p v-else class="nothing">Auncun argonauts enregistré</p>
+      <p v-else class="nothing">Aucun Argonaute enregistré</p>
     </section>
   </main>
 </template>
@@ -76,7 +76,7 @@ export default {
       this.error = null
       const exist = this.argonauts.find((arg) => arg.name === this.argonautInput)
       if (exist) {
-        this.error = 'Cet argonaut existe déjà'
+        this.error = 'Cet Argonaute existe déjà'
       }
     },
     'update.name' () {
@@ -84,7 +84,7 @@ export default {
         this.updateError = null
         const exist = this.argonauts.find((arg) => arg.name === this.update.name && arg.id !== this.update.id)
         if (exist) {
-          this.updateError = 'Cet argonaut existe déjà'
+          this.updateError = 'Cet Argonaute existe déjà'
         }
       }
     }
